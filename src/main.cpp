@@ -17,6 +17,19 @@ pros::MotorGroup rightMotors({6, -9, 7}, pros::MotorGearset::blue); // right mot
 pros::Distance fwrd_distance(10);
 
 
+
+
+/*
+
+git push commands
+
+git add .
+git commit -m "message"
+git push
+
+*/
+
+
 // Inertial Sensor on port 10
 pros::Imu imu(15);
 
