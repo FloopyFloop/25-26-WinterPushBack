@@ -80,7 +80,20 @@
 
 #endif  // _PROS_API_H_
 
-void test();
+
 extern const uint8_t nylock_logo_1_map[];
 extern pros::Distance fwrd_distance;
+extern pros::Motor intake_1;
+extern pros::Motor intake_2;
+extern pros::Optical optical;
+
+//function externs
+
+void long_goal();
+void outtake();
+void medium_top();
+void stop_intakes();
+
+//auton externs
+void test();
 

@@ -4,6 +4,7 @@
 //#include "liblvgl/widgets/image/lv_image.h"
 #include "pros/apix.h"
 #include "pros/distance.hpp"
+#include "pros/optical.hpp"
 
 // controller
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
@@ -13,13 +14,16 @@ pros::MotorGroup leftMotors({-1, -2, 3}, pros::MotorGearset::blue); // left moto
 pros::MotorGroup rightMotors({4, 5, 6}, pros::MotorGearset::blue); // right motor group - ports 6, 7, 9 (reversed)
 
 pros::Distance fwrd_distance(10);
+pros::Motor intake_1(5);
+pros::Motor intake_2(7);
+pros::Optical optical(6);
 
 /*
 
 git push commands
 
 git add .
-git commit -m "message"
+git commit -m "Example message"
 git push
 
 */
@@ -168,9 +172,39 @@ void autonomous() {
     
 }
 
-/**
- * Runs in driver control
- */
+void intake() {
+    
+    intake_1.move_voltage(12000);
+    intake_2.move_voltage(0);
+}
+
+void long_goal() {
+    
+    intake_1.move_voltage(12000);
+    intake_2.move_voltage(12000);
+
+}
+
+void medium_top() {
+    
+    intake_1.move_voltage(12000);
+    intake_2.move_voltage(10000);
+   
+}
+
+void outtake() {
+   
+    intake_1.move_voltage(-12000);
+    intake_2.move_voltage(-12000);
+    
+}
+
+
+void stop_intakes() {
+    intake_1.move_voltage(0);
+    intake_2.move_voltage(0);
+    
+}
 void opcontrol() {
     // controller
     // loop to continuously update motors
@@ -182,7 +216,28 @@ void opcontrol() {
         chassis.arcade(leftY, rightX);
         // delay to save resources
         pros::delay(10);
-    }
+
+        bool didAction = false;
+
+        // Use the proper enums for buttons
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+            intake();
+            didAction = true;
+        } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+            outtake();
+            didAction = true;
+        }
+
+        if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+            long_goal();
+            didAction = true;
+        } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+            medium_top();
+            
+            didAction = true;
+        }
+        if (!didAction) stop_intakes();
+        }
 
      
 }
