@@ -14,8 +14,13 @@ ASSET(SAWP_2);
 ASSET(SAWP_3);
 
 
-void move_until_distance(){
+
+void move_until_distance(double travel_until_distance){
     
+    while(true){
+        double current_distance = fwrd_distance.get(); 
+        
+    }
 }
 
 void test(){

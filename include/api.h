@@ -82,4 +82,5 @@
 
 void test();
 extern const uint8_t nylock_logo_1_map[];
+extern pros::Distance fwrd_distance;
 
