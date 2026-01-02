@@ -58,14 +58,8 @@ void move_until_distance(double travel_until_distance){
 }
 
 void test(){
-    chassis.cancelAllMotions();   
-
-    chassis.turnToHeading(90, 1000);
-
-    pros::delay(3000);
-
-    chassis.turnToHeading(180, 1000);
-}
+    
+}   
 
 void sigSAWP(){
     chassis.setPose(0,0,0);
@@ -73,9 +67,10 @@ void sigSAWP(){
     chassis.moveToPoint(0, 29.7, 1000);
     intake();
     chassis.turnToHeading(90,1000);
-
+    pros::delay(400);
+    
     match_load.extend();
-    pros::delay(500);
+    
     chassis.moveToPoint(11, 30, 1000, {.maxSpeed = 60});
     
     pros::delay(400);
