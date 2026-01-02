@@ -93,7 +93,16 @@ void long_goal();
 void outtake();
 void medium_top();
 void stop_intakes();
+void intake();
+
 
 //auton externs
 void test();
+void sigSAWP();
+
+// pneumatic externs
+
+extern pros::adi::Pneumatics match_load;
+extern pros::adi::Pneumatics trapdoor;
+extern pros::adi::Pneumatics wing;
 

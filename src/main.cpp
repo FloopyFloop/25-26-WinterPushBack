@@ -5,18 +5,24 @@
 #include "pros/apix.h"
 #include "pros/distance.hpp"
 #include "pros/optical.hpp"
+//#include <cstddef>
 
 // controller
 pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // motor groups
-pros::MotorGroup leftMotors({-1, -2, 3}, pros::MotorGearset::blue); // left motor group - ports 3, 4, 5 (reversed)
-pros::MotorGroup rightMotors({4, 5, 6}, pros::MotorGearset::blue); // right motor group - ports 6, 7, 9 (reversed)
+pros::MotorGroup leftMotors({-10, -9, -8}, pros::MotorGearset::blue); // left motor group - ports 3, 4, 5 (reversed)
+pros::MotorGroup rightMotors({1, 2, 3}, pros::MotorGearset::blue); // right motor group - ports 6, 7, 9 (reversed)
 
 pros::Distance fwrd_distance(10);
-pros::Motor intake_1(5);
-pros::Motor intake_2(7);
+pros::Motor intake_1(-20);
+pros::Motor intake_2(19);
 pros::Optical optical(6);
+
+
+pros::adi::Pneumatics wing ('H',false);
+pros::adi::Pneumatics match_load ('F',false);
+pros::adi::Pneumatics trapdoor ('G',false);
 
 /*
 
@@ -30,17 +36,27 @@ git push
 
 
 // Inertial Sensor on port 10
-pros::Imu imu(15);
+pros::Imu imu(11);
 
 // tracking wheels
 // horizontal tracking wheel encoder. Rotation sensor, port 20, not reversed
-pros::Rotation horizontalEnc(20);
+
+pros::Rotation horizontalEnc(-7);
+
 // vertical tracking wheel encoder. Rotation sensor, port 11, reversed
-pros::Rotation verticalEnc(-11);
+pros::Rotation verticalEnc(-7);
 // horizontal tracking wheel. 2.75" diameter, 5.75" offset, back of the robot (negative)
-lemlib::TrackingWheel horizontal(&horizontalEnc, lemlib::Omniwheel::NEW_275, -5.75);
+//lemlib::TrackingWheel horizontal(&horizontalEnc, lemlib::Omniwheel::NEW_275, 0);
 // vertical tracking wheel. 2.75" diameter, 2.5" offset, left of the robot (negative)
-lemlib::TrackingWheel vertical(&verticalEnc, lemlib::Omniwheel::NEW_275, -2.5);
+//lemlib::TrackingWheel vertical(&verticalEnc, lemlib::Omniwheel::NEW_275, 0.5);
+
+// horizontal tracking wheel. 2.75" diameter, 5.75" offset, back of the robot (negative)
+
+lemlib::TrackingWheel horizontal(&horizontalEnc,1, 0);
+
+// vertical tracking wheel. 2.75" diameter, 2.5" offset, left of the robot (negative) 
+lemlib::TrackingWheel vertical(&verticalEnc,2.75,0.6);
+
 
 // drivetrain settings
 lemlib::Drivetrain drivetrain(&leftMotors, // left motor group
@@ -52,9 +68,9 @@ lemlib::Drivetrain drivetrain(&leftMotors, // left motor group
 );
 
 // lateral motion controller
-lemlib::ControllerSettings linearController(10, // proportional gain (kP)
+lemlib::ControllerSettings linearController(5, // proportional gain (kP)
                                             0, // integral gain (kI)
-                                            3, // derivative gain (kD)
+                                            7.4, // derivative gain (kD)
                                             3, // anti windup
                                             1, // small error range, in inches
                                             100, // small error range timeout, in milliseconds
@@ -64,9 +80,9 @@ lemlib::ControllerSettings linearController(10, // proportional gain (kP)
 );
 
 // angular motion controller
-lemlib::ControllerSettings angularController(2, // proportional gain (kP)
+lemlib::ControllerSettings angularController(1.25, // proportional gain (kP)
                                              0, // integral gain (kI)
-                                             10, // derivative gain (kD)
+                                             7, // derivative gain (kD)
                                              3, // anti windup
                                              1, // small error range, in degrees
                                              100, // small error range timeout, in milliseconds
@@ -78,13 +94,13 @@ lemlib::ControllerSettings angularController(2, // proportional gain (kP)
 // sensors for odometry
 lemlib::OdomSensors sensors(&vertical, // vertical tracking wheel
                             nullptr, // vertical tracking wheel 2, set to nullptr as we don't have a second one
-                            &horizontal, // horizontal tracking wheel
+                            nullptr, // horizontal tracking wheel
                             nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
                             &imu // inertial sensor
 );
 
 // input curve for throttle input during driver control
-lemlib::ExpoDriveCurve throttleCurve(3, // joystick deadband out of 127
+lemlib::ExpoDriveCurve throttleCurve(5, // joystick deadband out of 127
                                      10, // minimum output where drivetrain will move out of 127
                                      1.019 // expo curve gain
 );
@@ -119,6 +135,13 @@ void display_img_from_c_array(){
 void initialize() {
     pros::lcd::initialize(); // initialize brain screen
     chassis.calibrate(); // calibrate sensors
+    /*
+    imu.reset();
+    while (imu.is_calibrating()) {
+        pros::delay(10);
+    }
+    */
+    chassis.setPose(0,0,0);
 
     // the default rate is 50. however, if you need to change the rate, you
     // can do the following.
@@ -167,28 +190,30 @@ ASSET(example_txt); // '.' replaced with "_" to make c++ happy
  * This is an example autonomous routine which demonstrates a lot of the features LemLib has to offer
  */
 void autonomous() {
-    test();
+    sigSAWP();
 
     
 }
 
 void intake() {
     
-    intake_1.move_voltage(12000);
-    intake_2.move_voltage(0);
+    intake_2.move_voltage(12000);
+    intake_1.move_voltage(0);
 }
 
 void long_goal() {
     
     intake_1.move_voltage(12000);
     intake_2.move_voltage(12000);
-
+    trapdoor.retract();
 }
 
 void medium_top() {
-    
+    trapdoor.extend();
+    pros::delay(150);
     intake_1.move_voltage(12000);
     intake_2.move_voltage(10000);
+    
    
 }
 
@@ -196,6 +221,7 @@ void outtake() {
    
     intake_1.move_voltage(-12000);
     intake_2.move_voltage(-12000);
+    trapdoor.retract();
     
 }
 
@@ -203,9 +229,13 @@ void outtake() {
 void stop_intakes() {
     intake_1.move_voltage(0);
     intake_2.move_voltage(0);
+    trapdoor.retract();
     
 }
 void opcontrol() {
+    //chassis.setPose(0,0,0);
+
+    {
     // controller
     // loop to continuously update motors
     while (true) {
@@ -214,6 +244,13 @@ void opcontrol() {
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
         // move the chassis with curvature drive
         chassis.arcade(leftY, rightX);
+
+        //AI CODE
+        // display chassis pose to controller screen
+        lemlib::Pose pose = chassis.getPose();
+        controller.print(0, 0, "X:%.2f Y:%.2f T:%.2f", pose.x, pose.y, pose.theta);
+        
+
         // delay to save resources
         pros::delay(10);
 
@@ -237,7 +274,33 @@ void opcontrol() {
             didAction = true;
         }
         if (!didAction) stop_intakes();
+
+
+        // pneumatics control
+
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+        static bool wing_state;
+        wing_state = !wing_state;
+        if (wing_state) wing.extend();
+        else wing.retract();
         }
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+        static bool match_load_state = false;
+        match_load_state = !match_load_state;
+        if (match_load_state) match_load.extend();
+        else match_load.retract();
+    
+
+        }
+
+        
+    }
+        
+    }
+
+
+        
+
 
      
 }

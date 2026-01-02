@@ -60,8 +60,57 @@ void move_until_distance(double travel_until_distance){
 void test(){
     chassis.cancelAllMotions();   
 
-    chassis.moveToPoint(30, 40, 1000);
-    move_until_distance(20);
     chassis.turnToHeading(90, 1000);
+
+    pros::delay(3000);
+
+    chassis.turnToHeading(180, 1000);
 }
 
+void sigSAWP(){
+    chassis.setPose(0,0,0);
+
+    chassis.moveToPoint(0, 29.7, 1000);
+    intake();
+    chassis.turnToHeading(90,1000);
+
+    match_load.extend();
+    pros::delay(500);
+    chassis.moveToPoint(11, 30, 1000, {.maxSpeed = 60});
+    
+    pros::delay(400);
+
+    chassis.moveToPoint(-25.5, 30.5, 2000,{.forwards = false,.maxSpeed = 80});
+    pros::delay(1000);
+    long_goal();
+    match_load.retract();
+    pros::delay(500);
+    chassis.turnToHeading(190.5, 1000);
+    stop_intakes();
+    intake();
+    
+    chassis.moveToPoint(-21, 8, 2000,{.maxSpeed = 90});
+
+    pros::delay(300);
+
+    match_load.extend();
+    pros::delay(500);
+    match_load.retract();
+    //chassis.turnToHeading(-180, 1000);
+    chassis.moveToPoint(-19, -35, 2000,{.maxSpeed = 80});
+    pros::delay(800);
+    //match_load.extend();
+    chassis.waitUntilDone();
+
+    chassis.turnToHeading(133, 1000);
+
+    chassis.moveToPoint(-30, -24, 1000,{.forwards = false, .maxSpeed = 80});
+    chassis.waitUntilDone();
+
+    medium_top();
+    pros::delay(700);
+
+    intake();
+
+
+}
