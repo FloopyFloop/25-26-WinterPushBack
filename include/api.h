@@ -99,6 +99,11 @@ void intake();
 //auton externs
 void test();
 void sigSAWP();
+void leftQUAL();
+void sevenWingRight();
+void fourWingRight();
+void skills();
+void getOffLine();
 
 // pneumatic externs
 

@@ -29,7 +29,7 @@ pros::adi::Pneumatics trapdoor ('G',false);
 git push commands
 
 git add .
-git commit -m "Example message"
+git commit -m "before sugar rush (4pm)"
 git push
 
 */
@@ -80,7 +80,7 @@ lemlib::ControllerSettings linearController(5, // proportional gain (kP)
 );
 
 // angular motion controller
-lemlib::ControllerSettings angularController(1.25, // proportional gain (kP)
+lemlib::ControllerSettings angularController(1.4, // proportional gain (kP)
                                              0, // integral gain (kI)
                                              7, // derivative gain (kD)
                                              3, // anti windup
@@ -190,8 +190,12 @@ ASSET(example_txt); // '.' replaced with "_" to make c++ happy
  * This is an example autonomous routine which demonstrates a lot of the features LemLib has to offer
  */
 void autonomous() {
-    sigSAWP();
-
+    //sigSAWP();
+    //leftQUAL();
+    //sevenWingRight();
+    //fourWingRight();
+    //getOffLine();
+    skills();
     
 }
 
@@ -210,8 +214,8 @@ void long_goal() {
 
 void medium_top() {
     trapdoor.extend();
-    pros::delay(150);
-    intake_1.move_voltage(12000);
+    pros::delay(100);
+    intake_1.move_voltage(8000);
     intake_2.move_voltage(10000);
     
    
