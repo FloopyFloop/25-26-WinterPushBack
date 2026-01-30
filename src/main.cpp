@@ -4,6 +4,7 @@
 //#include "liblvgl/widgets/image/lv_image.h"
 #include "pros/apix.h"
 #include "pros/distance.hpp"
+#include "pros/misc.h"
 #include "pros/optical.hpp"
 //#include <cstddef>
 
@@ -12,7 +13,7 @@ pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 // motor groups
 pros::MotorGroup leftMotors({-10, -9, -8}, pros::MotorGearset::blue); // left motor group - ports 3, 4, 5 (reversed)
-pros::MotorGroup rightMotors({1, 2, 3}, pros::MotorGearset::blue); // right motor group - ports 6, 7, 9 (reversed)
+pros::MotorGroup rightMotors({1, 4, 3}, pros::MotorGearset::blue); // right motor group - ports 6, 7, 9 (reversed)
 
 pros::Distance fwrd_distance(10);
 pros::Motor intake_1(-20);
@@ -106,7 +107,7 @@ lemlib::ExpoDriveCurve throttleCurve(5, // joystick deadband out of 127
 );
 
 // input curve for steer input during driver control
-lemlib::ExpoDriveCurve steerCurve(3, // joystick deadband out of 127
+lemlib::ExpoDriveCurve steerCurve(5, // joystick deadband out of 127
                                   10, // minimum output where drivetrain will move out of 127
                                   1.019 // expo curve gain
 );
@@ -191,11 +192,13 @@ ASSET(example_txt); // '.' replaced with "_" to make c++ happy
  */
 void autonomous() {
     //sigSAWP();
+    //regionalSAWP();
     //leftQUAL();
-    //sevenWingRight();
+    sevenWingRight();
     //fourWingRight();
     //getOffLine();
-    skills();
+    //skills();
+    //sevenWingLeft();
     
 }
 
@@ -215,8 +218,8 @@ void long_goal() {
 void medium_top() {
     trapdoor.extend();
     pros::delay(100);
-    intake_1.move_voltage(8000);
-    intake_2.move_voltage(10000);
+    intake_1.move_voltage(7000);
+    intake_2.move_voltage(9000);
     
    
 }
@@ -246,18 +249,23 @@ void opcontrol() {
         // get joystick positions
         int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
         int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+        int rightY = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
         // move the chassis with curvature drive
         chassis.arcade(leftY, rightX);
+        //chassis.tank(leftY, rightY);
 
         //AI CODE
         // display chassis pose to controller screen
         lemlib::Pose pose = chassis.getPose();
         controller.print(0, 0, "X:%.2f Y:%.2f T:%.2f", pose.x, pose.y, pose.theta);
+
         
+
+
+
 
         // delay to save resources
         pros::delay(10);
-
         bool didAction = false;
 
         // Use the proper enums for buttons
@@ -287,6 +295,14 @@ void opcontrol() {
         wing_state = !wing_state;
         if (wing_state) wing.extend();
         else wing.retract();
+
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+        static bool wing_state;
+        wing_state = !wing_state;
+        if (wing_state) wing.extend();
+        else wing.retract();
+        }
+
         }
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
         static bool match_load_state = false;
@@ -296,7 +312,18 @@ void opcontrol() {
     
 
         }
+        
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
+            chassis.setPose(0,0,0);
+            pros::delay(100);
 
+            chassis.moveToPoint(-7.75, 4, 2000, {.minSpeed = 50, .earlyExitRange = 1});
+            wing.retract();
+            chassis.turnToHeading(-8, 1000, {.minSpeed = 60});
+            
+        }
+        
+        
         
     }
         

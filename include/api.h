@@ -104,6 +104,8 @@ void sevenWingRight();
 void fourWingRight();
 void skills();
 void getOffLine();
+void sevenWingLeft();
+void regionalSAWP();
 
 // pneumatic externs
 
