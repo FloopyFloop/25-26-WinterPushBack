@@ -79,3 +79,37 @@
 #endif
 
 #endif  // _PROS_API_H_
+
+
+extern const uint8_t nylock_logo_1_map[];
+extern pros::Distance fwrd_distance;
+extern pros::Motor intake_1;
+extern pros::Motor intake_2;
+extern pros::Optical optical;
+
+//function externs
+
+void long_goal();
+void outtake();
+void medium_top();
+void stop_intakes();
+void intake();
+
+
+//auton externs
+void test();
+void sigSAWP();
+void leftQUAL();
+void sevenWingRight();
+void fourWingRight();
+void skills();
+void getOffLine();
+void sevenWingLeft();
+void regionalSAWP();
+
+// pneumatic externs
+
+extern pros::adi::Pneumatics match_load;
+extern pros::adi::Pneumatics trapdoor;
+extern pros::adi::Pneumatics wing;
+
